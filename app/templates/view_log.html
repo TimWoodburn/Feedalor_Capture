@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CCTV Still Grab - Log Viewer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: monospace;
+      background-color: #f4faff;
+      color: #222;
+      margin: 2rem;
+    }
+    pre {
+      background: #eef4fa;
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 80vh;
+      border: 1px solid #ccc;
+    }
+    h1 {
+      color: #2a4f7a;
+    }
+    a {
+      display: inline-block;
+      margin-bottom: 1rem;
+      color: #1a5dab;
+    }
+    .download-button {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background-color: #2a4f7a;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 1rem;
+      margin-right: 1rem;
+    }
+    .download-button:hover {
+      background-color: #1a5dab;
+    }
+  </style>
+</head>
+<body>
+  <h1>CCTV Still Grab - Log Viewer</h1>
+  <a href="/engineering">← Back to Engineering Page</a>
+
+  <pre id="logContent">{{ logs|join('') }}</pre>
+
+  <p>
+    <a href="/engineering/log/download" class="download-button" download>⬇ Download Full Log</a>
+    <button id="toggleButton" class="download-button" onclick="toggleAutoUpdate()">⏸ Pause Updates</button>
+  </p>
+
+  <script>
+    let autoUpdate = true;
+
+    function toggleAutoUpdate() {
+      autoUpdate = !autoUpdate;
+      document.getElementById("toggleButton").innerText = autoUpdate ? "⏸ Pause Updates" : "▶ Resume Updates";
+    }
+
+    function fetchLog() {
+      if (!autoUpdate) return;
+      fetch("/engineering/log")
+        .then(res => res.text())
+        .then(html => {
+          const content = html.match(/<pre id="logContent">([\s\S]*)<\/pre>/);
+          if (content && content[1]) {
+            document.getElementById("logContent").innerHTML = content[1];
+            document.getElementById("logContent").scrollTop = document.getElementById("logContent").scrollHeight;
+          }
+        });
+    }
+
+    window.onload = function () {
+      setInterval(fetchLog, 5000);
+      const logBox = document.getElementById("logContent");
+      logBox.scrollTop = logBox.scrollHeight;
+    };
+  </script>
+</body>
+</html>

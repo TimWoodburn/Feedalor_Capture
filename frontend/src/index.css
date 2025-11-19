@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add a smooth opacity pulse animation */
+@keyframes pulseRefresh {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+  }
+  
+  img.pulse-refresh {
+    animation: pulseRefresh 0.5s ease-in-out;
+  }
+
+  .sticky-top {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 50;
+  }
+  
+  .sticky-controlbar {
+    position: sticky;
+    top: 64px; /* after TopBar */
+    background-color: white;
+    z-index: 40;
+  }
+  
+  .sticky-header {
+    position: sticky;
+    top: 136px; /* after TopBar + ControlBar */
+    background-color: white;
+    z-index: 30;
+  }
+  
+  

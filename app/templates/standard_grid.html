@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Standard Grid View</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+    }
+    #grid {
+      display: grid;
+      width: 100vw;
+      height: 100vh;
+    }
+    .tile {
+      background: black;
+    }
+    .tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      visibility: hidden;
+      transition: opacity 0.5s ease-in;
+    }
+    .tile img.visible {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="grid"></div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    let currentConfig = { rows: 0, cols: 0 };
+    const lastTimestamps = new Map();
+
+    async function loadGrid() {
+      try {
+        const res = await fetch("/api/feeds");
+        const feeds = await res.json();
+        if (!feeds.length) return;
+
+        let rows = 1;
+        let cols = 1;
+        while (rows * cols < feeds.length) {
+          if (cols <= rows) cols++;
+          else rows++;
+        }
+
+        const targetCells = rows * cols;
+        const displayFeeds = [];
+        for (let i = 0; i < targetCells; i++) {
+          displayFeeds.push(feeds[i % feeds.length]);
+        }
+
+        if (rows !== currentConfig.rows || cols !== currentConfig.cols) {
+          grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+          grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+          grid.innerHTML = "";
+
+          for (const feed of displayFeeds) {
+            const tile = document.createElement("div");
+            tile.className = "tile";
+
+            const img = document.createElement("img");
+            img.src = `/static/stills/${feed.uuid}.jpg?ts=${Date.now()}`;
+            img.title = `${feed.title} (${feed.uuid})`;
+            img.onload = () => img.classList.add("visible");
+            img.onerror = () => img.classList.remove("visible");
+
+            lastTimestamps.set(feed.uuid, feed.last_capture_at);
+            tile.appendChild(img);
+            grid.appendChild(tile);
+          }
+
+          currentConfig = { rows, cols };
+
+        } else {
+          const imgs = grid.querySelectorAll("img");
+          imgs.forEach((img, i) => {
+            const feed = displayFeeds[i];
+            const prevTimestamp = lastTimestamps.get(feed.uuid);
+
+            if (feed.last_capture_at !== prevTimestamp) {
+              img.classList.remove("visible");
+              img.onload = () => img.classList.add("visible");
+              img.onerror = () => img.classList.remove("visible");
+              img.src = `/static/stills/${feed.uuid}.jpg?ts=${Date.now()}`;
+              lastTimestamps.set(feed.uuid, feed.last_capture_at);
+            }
+          });
+        }
+
+      } catch (e) {
+        console.error("Error loading feeds:", e);
+      }
+    }
+
+    loadGrid();
+    setInterval(loadGrid, 10000);
+  </script>
+</body>
+</html>

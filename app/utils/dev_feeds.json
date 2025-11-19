@@ -1,0 +1,19 @@
+[
+    {
+      "uuid": "34fa568b-6605-4263-98b7-f1538e1b3169",
+      "url": "http://109.236.111.203:80/mjpg/video.mjpg",
+      "title": "Italian Town Car park",
+      "seconds_per_capture": 8,
+      "history_length":5,
+      "decoder_name": "basic"
+    },
+    {
+      "uuid": "aafa568b-6605-4263-98b7-f1538e1b31a",
+      "url": "http://87.138.157.245:80/cgi-bin/faststream.jpg",
+      "title": "German Big Birdies",
+      "seconds_per_capture": 15,
+      "history_length":5,
+      "decoder_name": "basic"
+    }
+  ]
+  

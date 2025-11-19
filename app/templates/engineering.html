@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CCTV Still Grab - Engineering Page</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+      background-color: #f4faff;
+      color: #222;
+    }
+    h1 {
+      color: #2a4f7a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+    }
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th.sortable:hover {
+      background-color: #e0eaf6;
+    }
+    th.asc::after {
+      content: " ▲";
+    }
+    th.desc::after {
+      content: " ▼";
+    }
+    tr:nth-child(even) {
+      background-color: #eef4fa;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    ul li {
+      margin-bottom: 0.5rem;
+    }
+    .file-table td:last-child a {
+      color: #1a5dab;
+    }
+    .offline {
+      background-color: #ffe4e1;
+    }
+    .checkboxes-table {
+      margin-bottom: 1rem;
+      border-collapse: collapse;
+    }
+    .checkboxes-table td {
+      padding: 0.3rem 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Feedalor Capture - Engineering Page</h1>
+
+  <h2>System Summary</h2>
+  <ul>
+    <li><strong>Current UTC Time:</strong> {{ now }}</li>
+    <li><strong>Registered Decoders:</strong> {{ decoders|join(', ') }}</li>
+    <li><strong>Total Feeds:</strong> {{ feeds|length }}</li>
+    <li><strong>Orphaned Files:</strong> {{ orphaned_count }}</li>
+  </ul>
+  <p><a href="/engineering/log" target="_blank">View Application Log ↗</a></p>
+
+  <h2>Feed Table</h2>
+  <table class="checkboxes-table">
+    <tr>
+      {% for col in feed_columns if col != 'uuid' %}
+        <td><label><input type="checkbox" class="col-toggle" data-col="{{ col }}"> {{ col }}</label></td>
+      {% endfor %}
+    </tr>
+  </table>
+
+  <table id="feedTable">
+    <thead>
+      <tr>
+        <th>uuid</th>
+        {% for col in feed_columns if col != 'uuid' %}
+          <th data-col="{{ col }}">{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for feed in feeds %}
+      <tr class="{{ 'offline' if feed_stats[loop.index0].is_offline else '' }}">
+        <td>{{ feed["uuid"] }}</td>
+        {% for col in feed_columns if col != 'uuid' %}
+          <td data-col="{{ col }}">{{ feed[col] }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-bottom: 2rem;">
+    <button onclick="backupFeeds()">🔄 Backup Feeds</button>
+    <input type="file" id="restoreFileInput" style="display: none;" onchange="restoreFeeds(this)">
+    <button onclick="document.getElementById('restoreFileInput').click()">🗂️ Restore Feeds</button>
+  </div>
+
+  <h2>Static File Index</h2>
+  <table class="file-table">
+    <thead>
+      <tr>
+        <th class="sortable">File</th>
+        <th class="sortable">Modified (UTC)</th>
+        <th class="sortable" data-type="number">Size (bytes)</th>
+        <th>Open</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for file in file_index %}
+      <tr>
+        <td>{{ file.name }}</td>
+        <td>{{ file.modified }}</td>
+        <td>{{ file.size }}</td>
+        <td><a href="{{ file.url }}" target="_blank">Open File</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    const toggles = document.querySelectorAll(".col-toggle");
+    const storageKey = "feedTableCols";
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+
+    toggles.forEach(toggle => {
+      const col = toggle.dataset.col;
+      const show = saved[col] !== false;
+      toggle.checked = show;
+      toggle.addEventListener("change", () => {
+        saved[col] = toggle.checked;
+        localStorage.setItem(storageKey, JSON.stringify(saved));
+        applyColumnVisibility();
+      });
+    });
+
+    function applyColumnVisibility() {
+      const all = document.querySelectorAll("[data-col]");
+      all.forEach(el => {
+        const col = el.dataset.col;
+        const visible = saved[col] !== false;
+        el.style.display = visible ? "table-cell" : "none";
+      });
+    }
+    applyColumnVisibility();
+  </script>
+
+  <script>
+    document.querySelectorAll("th.sortable").forEach(header => {
+      header.style.cursor = "pointer";
+      header.addEventListener("click", () => {
+        const table = header.closest("table");
+        const tbody = table.querySelector("tbody");
+        const index = Array.from(header.parentNode.children).indexOf(header);
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        const isNumeric = header.dataset.type === "number";
+
+        rows.sort((a, b) => {
+          const aText = a.children[index].innerText;
+          const bText = b.children[index].innerText;
+          return isNumeric
+            ? parseFloat(aText) - parseFloat(bText)
+            : aText.localeCompare(bText);
+        });
+
+        if (header.classList.contains("asc")) {
+          rows.reverse();
+          header.classList.remove("asc");
+          header.classList.add("desc");
+        } else {
+          header.classList.remove("desc");
+          header.classList.add("asc");
+        }
+
+        tbody.innerHTML = "";
+        rows.forEach(row => tbody.appendChild(row));
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  web:
+    container_name: feedalor_capture_web
+    image: feedalor/capture_web:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - IN_MEMORY_STORAGE=true
+      - MAX_WORKERS=4
+      - MAX_LOG_SIZE_MB=10
+      - THUMBNAIL_WIDTH=100           # 
+      - THUMBNAIL_HEIGHT=100          # 
+      - THUMBNAIL_REFRESH_INTERVAL=10 #  10 seconds refresh
+      - TABLE_REFRESH_INTERVAL=60     #  60 seconds refresh
+    volumes:
+      - db_data:/app/db               # SQLite DB stored in mounted volume
+    depends_on:
+      - redis
+    restart: unless-stopped
+    entrypoint: ./entrypoint.sh       # Ensure this is executable
+
+  redis:
+    image: redis:7
+    container_name: feedalor_capture_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  db_data:

@@ -1,0 +1,9 @@
+# Google maps
+#  - **Directions API**
+#  - **Static Maps API**
+GOOGLE_MAPS_API_KEY=your google key
+
+# Realtime Trains API
+# API Auth Credentials
+RTTAPI_USERNAME=your username
+RTTAPI_PASSWORD=your key
