@@ -167,13 +167,15 @@ cython_debug/
 *.zip
 *.txt
 _legacy/
-.env.*
+.env.keys
+.env
 /docs/rough_summary.md
 
 
-# Allow requirements.txt
+# Allow requirements.txt and others
 !requirements.txt
-
+!.env.keys.example
+!.env.example
 
 
 .vscode/
