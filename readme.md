@@ -41,6 +41,8 @@ docker compose up
 
 Then open `http://localhost:5001` in your browser.
 
+Add your own feeds or load "Example_Feed_Set" via the settings menu, top right. Note, the example feeds may not be live.
+
 ---
 
 ## Decoder Philosophy: Visual Probes
