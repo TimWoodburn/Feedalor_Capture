@@ -28,9 +28,15 @@ A modern, extensible platform for capturing still frames from any dynamic visual
 
 ### Quick Start
 ```bash
-git clone https://github.com/yourusername/cctv-still-grab.git
-cd cctv-still-grab
-docker-compose up --build
+git clone https://github.com/TimWoodburn/Feedalor_Capture
+cd Feedalor_Capture
+```
+review and rename .env.example to .env
+review and rename .env.keys.example to .env.keys
+
+```bash
+docker compose build
+docker compose up
 ```
 
 Then open `http://localhost:5001` in your browser.
@@ -138,6 +144,6 @@ Pull requests are welcome! For new decoders, [see the plugin guide](docs/dev_gui
 
 ## Author
 
-Maintained by [Your Name / Handle]
+Maintained by [Tim Woodburn / TimWoodburn]
 
 > “Built to explore the edges of simple, universal visual capture.”
